@@ -10,9 +10,9 @@ def predictfromStream():
 
     # Load model
     input_dim  = 16
-    output_dim = 2
+    output_dim = 3
     model = NeuralNetworkClassificationModel(input_dim,output_dim)
-    model.load_state_dict(torch.load("Saved models/toTestIfRealtimeWorks.pth"))
+    model.load_state_dict(torch.load("Saved models/890342.pth"))
 
     # first resolve an EEG stream on the lab network
     print("looking for an EEG stream...")
