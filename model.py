@@ -1,8 +1,8 @@
 import torch.nn as nn
 # Init NN model
-class NeuralNetworkClassificationModel(nn.Module):
+class DynamicClassifier(nn.Module):
     def __init__(self,input_dim,output_dim):
-        super(NeuralNetworkClassificationModel,self).__init__()
+        super(DynamicClassifier, self).__init__()
         self.input_layer    = nn.Linear(input_dim,128)
         self.hidden_layer1  = nn.Linear(128,64)
         self.output_layer   = nn.Linear(64,output_dim)

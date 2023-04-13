@@ -1,4 +1,5 @@
 from predictOnIncomingStream import predictfromStream
+from model import DynamicClassifier
 while(True):
     choice = int(input("press 1 for: prediction on incoming stream \npress 9 for: exit\n:"))
 
