@@ -3,18 +3,18 @@ from pylsl import StreamInlet, resolve_stream
 import time
 import numpy as np
 import torch
-from model import DynamicClassifier
 from utilityFunctions import getData, getInference
 from preprocessing import handleOutliers, filterAndStandardize, applyPCA
+from model import DynamicClassifier
 
 def predictfromStream():
 
     # Load model
-    input_dim  = 3
-    output_dim = 3
-    model = DynamicClassifier(input_dim,output_dim)
-    model = torch.load("Saved models/145836.pth")
-    #model.load_state_dict(item)
+    model = DynamicClassifier(3,3)
+    full = torch.load("Saved models/134240.pth")
+    #model = full['model_architecture']
+    #todo: need to figure out smooth model loading
+    model = model.load_state_dict(full['model_state'])
 
     # first resolve an EEG stream on the lab network
     print("looking for an EEG stream...")
@@ -27,25 +27,35 @@ def predictfromStream():
     starterTime = time.time()
 
     while time.time() < t_endOuter:
+        starterTimeInner = time.time()
         # obtain data
         samples = getData(inlet)
-        print(len(samples))
-        
-        print(len(samples[0]))
         # preprocess data
         # outliers
-        samples = handleOutliers(samples)
+        samplesOutlier, changedAmount = handleOutliers(samples)
+        if changedAmount == 0:
+            assert(np.array_equal(samples, samplesOutlier))
+        else:
+            try:
+                assert(not np.array_equal(samples, samplesOutlier))
+            except AssertionError: 
+                print("Issue: the returned array after outlier removal seems to be the same as the one supplied, though outliers were handled.")
+                print(np.array_equal(samples, samplesOutlier))
+                #print("in unprocessed but not processed: ", np.setdiff1d(samples, samplesOutlier))
+                #print("in processed but not unprocessed: ", np.setdiff1d(samplesOutlier, samples))
+
         outlierTime = time.time()
+
         # filter and standardize
         samples = filterAndStandardize(samples)
         filterTime = time.time()
         # pca
-        samples = applyPCA(samples)
+        samples = applyPCA(3, samples)
         pcaTime = time.time()
 
-        print("outlier ", outlierTime - starterTime, "filter", filterTime - starterTime, "pca", pcaTime - starterTime)
+        print("outlier ", outlierTime - starterTimeInner, "filter", filterTime - starterTimeInner, "pca", pcaTime - starterTimeInner)
         # make predictions
-        predictions = getInference(samples, model)
+        predictions, mostOccuringClass = getInference(samples, model)
 
     finisherTime = time.time()
     print("total time taken", finisherTime - starterTime)

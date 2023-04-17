@@ -4,14 +4,18 @@ import numpy as np
 
 # get data func
 def getData(inlet):
-    items = []
+    #pull once to initialize np arr
+    sample, timestamp = inlet.pull_sample()
+    items = np.asarray(sample)
+    items = np.reshape(items, (-1, 16))
     t_end = time.time() + 0.5
 
     while time.time() < t_end:
-        # get a new sample (you can also omit the timestamp part if you're not
-        # interested in it)
+        # get a new sample 
         sample, timestamp = inlet.pull_sample()
-        items.append(sample)
+        sampleInArr = np.asarray(sample)
+        sampleInArr = np.reshape(sampleInArr, (-1, 16))
+        items = np.append(items, sampleInArr, axis=0)
     return items
 
 # get inference func (longest time it took on pracc data was 0.003 sec. that means i can have shorter data collection 
