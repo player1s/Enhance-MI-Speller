@@ -5,16 +5,19 @@ import numpy as np
 import torch
 from utilityFunctions import getData, getInference
 from preprocessing import handleOutliers, filterAndStandardize, applyPCA
-from model import DynamicClassifier
+from model import BasicClassifier
 
 def predictfromStream():
 
     # Load model
-    model = DynamicClassifier(3,3)
-    full = torch.load("Saved models/134240.pth")
+    model = BasicClassifier(3,3)
+    modelState = torch.load("Saved models/895083.pth")['model_state']
+    print("type", modelState['input_layer.weight'].dtype)
+    model.load_state_dict(modelState)
     #model = full['model_architecture']
-    #todo: need to figure out smooth model loading
-    model = model.load_state_dict(full['model_state'])
+    #todo: need to figure out smooth model loading. Got incompatible keys. got to review if the model class here match loads
+    #model = model.load_state_dict(full['model_state'])
+    model.eval()
 
     # first resolve an EEG stream on the lab network
     print("looking for an EEG stream...")
@@ -53,7 +56,7 @@ def predictfromStream():
         samples = applyPCA(3, samples)
         pcaTime = time.time()
 
-        print("outlier ", outlierTime - starterTimeInner, "filter", filterTime - starterTimeInner, "pca", pcaTime - starterTimeInner)
+        print("outlier ", outlierTime - starterTimeInner, "filter", filterTime - outlierTime, "pca", pcaTime - filterTime)
         # make predictions
         predictions, mostOccuringClass = getInference(samples, model)
 

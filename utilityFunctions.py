@@ -24,6 +24,8 @@ def getInference(samples, model):
     tensor = torch.tensor(samples)
     predictions = []
     final = []
+    print(tensor.dtype)
+    tensor = tensor.to(torch.float32)
     with torch.no_grad():
         predictions = model(tensor)
 
